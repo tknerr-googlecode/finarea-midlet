@@ -1,0 +1,19 @@
+#Instructions
+
+= Adding a Finarea/Betamax Service =
+
+In order to add a service, such as sipdiscount.com, you need to manually edit the FinareaMidlet.jad file (open it in a text editor) and add these four lines for each service you want to use:
+
+ * service-0-name: sipdiscount
+ * service-0-account-provider: sipdiscount.com
+ * service-0-account-username: your_username
+ * service-0-account-password: your_password 
+
+In the example above sipdiscount is the first service. If you want to add more services, use  *service-1-**, *service-2-**, etc.
+
+= Details =
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
