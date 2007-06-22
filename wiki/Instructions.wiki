@@ -1,5 +1,4 @@
 #labels Featured,Phase-Deploy
-#instructions how to set up different Finarea Services and how to configure the connection
 
 = Adding a Finarea/Betamax Service =
 
@@ -32,5 +31,4 @@ When you first start the midlet you should go to the settings dialog and configu
 ^[note 1]^: this does not require to set up a php script as it uses the service directly. However, it (a) creates more network traffic (multiple HTTPS requests are necessary in order to log in and initiate a call) and (b) it does not work on some nokia handsets (the  reason is that sipdiscount.com et al respond with two Set-Cookie headers of which only the  first one is valid, but my N6630 always picks the second one)
 
 ^[note 2]^: using this setting the midlet calls the [http://www.aldeaglobal.net/callserver/ betamax callserver scripts] instead of using the service directly. It (a) creates much less traffic (only one HTTP request) and (b) is the only solution if the direct connection does not work. I don't recommend to use the scripts located at http://www.aldeaglobal.net/callserver/call.php and http://www.aldeaglobal.net/callserver/sms.php, better set up your own php server with HTTPS enabled in order to not leave traces of your username/password in the various server log files...
-
 
