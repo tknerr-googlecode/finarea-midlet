@@ -1,0 +1,18 @@
+MIDlet-1: Finarea Midlet,,de.tknerr.mobdev.finarea.FinareaMidlet
+MIDlet-Data-Size: 0
+MIDlet-Jar-Size: 31447
+MIDlet-Jar-URL: FinareaMidlet.jar
+MIDlet-Name: Finarea Midlet
+MIDlet-Permissions: javax.microedition.pim.ContactList.read,javax.microedition.io.Connector.http,javax.microedition.io.Connector.https
+MIDlet-Vendor: mobdev.tknerr.de
+MIDlet-Version: 1.0.0
+MicroEdition-Configuration: CLDC-1.1
+MicroEdition-Profile: MIDP-2.0
+service-0-account-password: your_password
+service-0-account-provider: sipdiscount.com
+service-0-account-username: your_username
+service-0-name: sipdiscount
+service-1-account-password: your_password
+service-1-account-provider: voiparound.com
+service-1-account-username: your_username
+service-1-name: freecall
