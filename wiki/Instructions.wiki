@@ -1,5 +1,4 @@
 #labels Featured,Phase-Deploy
-
 = Adding a Finarea/Betamax Service =
 
 In order to add a service, such as sipdiscount.com, you need to manually edit the FinareaMidlet.jad file (open it in a text editor) and add these four lines for each service you want to use:
@@ -9,17 +8,23 @@ In order to add a service, such as sipdiscount.com, you need to manually edit th
  * service-0-account-username: your_username
  * service-0-account-password: your_password 
 
-In the example above sipdiscount is the first service. If you want to add more services, use  service-1-, service-2-, etc.
+ * service-0-name: freecall
+ * service-0-account-provider: voiparound.com ^[note 1]^
+ * service-0-account-username: your_username
+ * service-0-account-password: your_password 
+
+In the example above sipdiscount is the first and freecall the second service. If you want to add more services, use  service-2-, service-3-, etc.
 
 Once you have added the services, you can install the midlet on your phone.
+
 
 = Configuring the Connection and Phone Number =
 
 When you first start the midlet you should go to the settings dialog and configure how you want to connect to the Finarea services and the number to which you want to receive the call (most likely the number of your mobile):
  
  * *Connection*
-  * *direct*: the midlet logs in to the service (e.g. sipdiscount.com) directly ^[note 1]^
-  * *php scripts*: the midlet uses the php scripts below to initiate a call ^[note 2]^ 
+  * *direct*: the midlet logs in to the service (e.g. sipdiscount.com) directly ^[note 2]^
+  * *php scripts*: the midlet uses the php scripts below to initiate a call ^[note 3]^ 
  * *php callscript URL* 
   * URL of the PHP script for initiating a call, e.g. https://example.com/call.php (HTTPS recommended)
  * *php smsscript URL*
@@ -27,8 +32,9 @@ When you first start the midlet you should go to the settings dialog and configu
  * *Callback number*
   * the number you want to be called back after the call has been initiated
 
+^[note 1]^: for freecall.com you have to use *voiparound.com* for the service-N-account-provider field (if you are logged in to the freecall web interface you can see that the url is https://myaccount.voiparound.com/). 
 
-^[note 1]^: this does not require to set up a php script as it uses the service directly. However, it (a) creates more network traffic (multiple HTTPS requests are necessary in order to log in and initiate a call) and (b) it does not work on some nokia handsets (the  reason is that sipdiscount.com et al respond with two Set-Cookie headers of which only the  first one is valid, but my N6630 always picks the second one)
+^[note 2]^: this does not require to set up a php script as it uses the service directly. However, it (a) creates more network traffic (multiple HTTPS requests are necessary in order to log in and initiate a call) and (b) it does not work on some nokia handsets (the  reason is that sipdiscount.com et al respond with two Set-Cookie headers of which only the  first one is valid, but my N6630 always picks the second one)
 
-^[note 2]^: using this setting the midlet calls the [http://www.aldeaglobal.net/callserver/ betamax callserver scripts] instead of using the service directly. It (a) creates much less traffic (only one HTTP request) and (b) is the only solution if the direct connection does not work. I don't recommend to use the scripts located at http://www.aldeaglobal.net/callserver/call.php and http://www.aldeaglobal.net/callserver/sms.php, better set up your own php server with HTTPS enabled in order to not leave traces of your username/password in the various server log files...
+^[note 3]^: using this setting the midlet calls the [http://www.aldeaglobal.net/callserver/ betamax callserver scripts] instead of using the service directly. It (a) creates much less traffic (only one HTTP request) and (b) is the only solution if the direct connection does not work. I don't recommend to use the scripts located at http://www.aldeaglobal.net/callserver/call.php and http://www.aldeaglobal.net/callserver/sms.php, better set up your own php server with HTTPS enabled in order to not leave traces of your username/password in the various server log files...
 
