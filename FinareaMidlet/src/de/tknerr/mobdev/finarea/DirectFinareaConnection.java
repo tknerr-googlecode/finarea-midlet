@@ -75,6 +75,8 @@ public class DirectFinareaConnection implements FinareaConnection {
 			cooks[cooks.length-1] = "voipusername="+account.getUsername();
 			http.cookies.put("myaccount." + account.getProvider(), cooks);
 		}
+
+		//TODO: it always says session lost here, but in fact it is not!!
 //		System.out.println("\n### login response2\n" + resp + "\n###\n");
 //		errMarker = "Username and/or password incorrect";
 //		if (resp.indexOf(errMarker) > 0) { 
