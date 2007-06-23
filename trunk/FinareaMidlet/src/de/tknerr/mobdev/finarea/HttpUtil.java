@@ -74,6 +74,13 @@ public class HttpUtil {
 				Debug.log("initial set-cookie for host: " + host + " (cookie: " + nameValue + ")");
 			} else {
 				for (int i=0; i<cookiesArray.length; i++) {
+					//TODO: quick fix: if sipdiscoutn et al send session id twice then use the latter one
+					//TODO: unfortunately the nokia phones seem to filter the second PHPSESSID before it is passed to J2ME :(
+					if (cookiesArray[i].startsWith("PHPSESSID") && nameValue.startsWith("PHPSESSID")) {
+						cookiesArray[i] = nameValue;
+						Debug.log("replaced previous PHPSESSID header with a newer one");
+						return;
+					}
 					if (cookiesArray[i].equals(nameValue)) {
 						Debug.log("ignoring same cookie for host " + host + ": " + nameValue);
 						return;
