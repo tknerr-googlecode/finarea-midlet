@@ -17,6 +17,16 @@ In the example above sipdiscount is the first and freecall the second service. I
 
 Once you have added the services, you can install the midlet on your phone.
 
+= The main menu =
+
+The main menu of the finarea-midlet application consists of the following menu entries:
+
+ * *find contact...*: allows you to jump to the contact starting with the letters you enter
+ * *call...*: initiates a call to the selected contact
+ * *sms...*: allows you to send an sms to the selected contact
+ * *free webcall*: initiates a free trial call, which does not require prior registration to a Finarea/Betamax service. However, it is limited to only a few minutes which are counted per IP address (will most likely not work, because Finarea sees only the IP address of the carrier gateway, which will be used by any user)
+ * *settings*: configuration settings, see below
+ * *debug box*: shows some debug output
 
 = Configuring the Connection and Phone Number =
 
