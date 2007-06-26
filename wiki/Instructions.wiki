@@ -1,5 +1,4 @@
 #labels Featured,Phase-Deploy
-
 = The main menu =
 
 The main menu of the finarea-midlet application consists of the following menu entries:
@@ -37,7 +36,7 @@ Since version 0.2 no manual editing of the jad file is needed anymore. Instead, 
 
 = Notes =
 
-^[note 1]^: for freecall.com you have to use *voiparound.com* for the service-N-account-provider field (if you are logged in to the freecall web interface you can see that the url is https://myaccount.voiparound.com/). 
+^[note 1]^: for freecall.com you have to use *voiparound.com* for the service url field (if you are logged in to the freecall web interface you can see that the url is https://myaccount.voiparound.com/). 
 
 ^[note 2]^: this does not require to set up a php script as it uses the service directly. However, it (a) creates more network traffic (multiple HTTPS requests are necessary in order to log in and initiate a call) and (b) it does not work on some nokia handsets (the  reason is that sipdiscount.com et al respond with two Set-Cookie headers of which only the  first one is valid, but my N6630 always picks the second one)
 
