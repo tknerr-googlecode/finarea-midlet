@@ -1,21 +1,4 @@
 #labels Featured,Phase-Deploy
-= Adding a Finarea/Betamax Service =
-
-In order to add a service, such as sipdiscount.com, you need to manually edit the FinareaMidlet.jad file (open it in a text editor) and add these four lines for each service you want to use:
-
- * service-0-name: sipdiscount
- * service-0-account-provider: sipdiscount.com
- * service-0-account-username: your_username
- * service-0-account-password: your_password 
-
- * service-0-name: freecall
- * service-0-account-provider: voiparound.com ^[note 1]^
- * service-0-account-username: your_username
- * service-0-account-password: your_password 
-
-In the example above sipdiscount is the first and freecall the second service. If you want to add more services, use  service-2-, service-3-, etc.
-
-Once you have added the services, you can install the midlet on your phone.
 
 = The main menu =
 
@@ -24,8 +7,9 @@ The main menu of the finarea-midlet application consists of the following menu e
  * *find contact...*: allows you to jump to the contact starting with the letters you enter
  * *call...*: initiates a call to the selected contact
  * *sms...*: allows you to send an sms to the selected contact
- * *free webcall*: initiates a free trial call, which does not require prior registration to a Finarea/Betamax service. However, it is limited to only a few minutes which are counted per IP address (will most likely not work, because Finarea sees only the IP address of the carrier gateway, which will be used by any user)
+ * *enter number...*: allows you to enter an arbitray number to call (instead of selecting a contact)
  * *settings*: configuration settings, see below
+ * *accounts*: here you manage your finarea/betamax accounts
  * *debug box*: shows some debug output
 
 = Configuring the Connection and Phone Number =
@@ -41,6 +25,15 @@ When you first start the midlet you should go to the settings dialog and configu
   * URL of the PHP script for sending sms, e.g. https://example.com/sms.php (HTTPS recommended)
  * *Callback number*
   * the number you want to be called back after the call has been initiated
+
+= Configuring your Finarea/Betamax Services =
+
+Since version 0.2 no manual editing of the jad file is needed anymore. Instead, after starting up the application, select "accounts" and then "Add account" and provide the following details:
+
+ * *display name*: the display name of the service
+ * *serive url*: the url of the finarea service after you log in on their web interface.  it always starts with, e.g. "myaccount.sipdiscount.com" (for sipdiscount.com) or "myaccount.voiparound.com" (for freecall.com) ^[note 1]^
+ * *username*: your username
+ * *password*: your password 
 
 = Notes =
 
