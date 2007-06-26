@@ -81,7 +81,7 @@ public class CallscriptFinareaConnection implements FinareaConnection {
 		String resp = null;
 		try {
 			resp = http.sendHttpGet(callscriptUrl + "?" + 
-					"provider=" + account.getProvider() + "&" +
+					"provider=" + account.getProvider().substring("myaccount.".length()) + "&" +
 					"us=" + HttpUtil.urlEncode(user) + "&" +
 					"ps=" + HttpUtil.urlEncode(pass) + "&" +
 					"tela="+ HttpUtil.urlEncode(fromNumber) +"&" +
@@ -116,7 +116,7 @@ public class CallscriptFinareaConnection implements FinareaConnection {
 		try {
 			//TODO: resolve timezone / server-client time difference issues
 			resp = http.sendHttpGet(smsscriptUrl + "?" + 
-					"provider="+ account.getProvider() +"&" +
+					"provider="+ account.getProvider().substring("myaccount.".length()) +"&" +
 					"disp=0&" + 
 					"us=" + HttpUtil.urlEncode(user) +"&" +
 					"ps=" + HttpUtil.urlEncode(pass) + "&" +

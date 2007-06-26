@@ -33,7 +33,7 @@ public class DirectFinareaConnection implements FinareaConnection {
 	public synchronized void login() throws FinareaException {
 		Debug.log("logging in...");
 		if (loggedIn) throw new FinareaException("already logged in!");
-		String url = "https://myaccount."+ account.getProvider() +"/clx/index.php";
+		String url = "https://"+ account.getProvider() +"/clx/index.php";
 		String params = "?part=plogin&" +
 				"username="+HttpUtil.urlEncode(jsSimpleMask(account.getUsername()))+"&" +
 				"password="+HttpUtil.urlEncode(jsSimpleMask(account.getPassword()));
@@ -46,7 +46,7 @@ public class DirectFinareaConnection implements FinareaConnection {
 //		System.out.println("\n### login response1\n" + resp + "\n###\n");
 		String errMarker = "Username and/or password incorrect";
 		if (resp.indexOf(errMarker) > 0) { 
-			http.clearCookies("myaccount." + account.getProvider());
+			http.clearCookies(account.getProvider());
 			throw new FinareaException("Username and/or password incorrect");
 		}
 
@@ -57,7 +57,7 @@ public class DirectFinareaConnection implements FinareaConnection {
 		}
 		//hack for nokia handsets which do not receive multiple set-cookies
 		//have to add it manually
-		String[] cooks = (String[]) http.cookies.get("myaccount." + account.getProvider());
+		String[] cooks = (String[]) http.cookies.get(account.getProvider());
 		Debug.log("cooks = "  + cooks);
 		boolean found = false;
 		if (cooks != null) {
@@ -73,14 +73,14 @@ public class DirectFinareaConnection implements FinareaConnection {
 			Debug.log("added manually: voipusername=" + account.getUsername());
 			cooks = http.growArray(cooks, 1);
 			cooks[cooks.length-1] = "voipusername="+account.getUsername();
-			http.cookies.put("myaccount." + account.getProvider(), cooks);
+			http.cookies.put(account.getProvider(), cooks);
 		}
 
 		//TODO: it always says session lost here, but in fact it is not!!
 //		System.out.println("\n### login response2\n" + resp + "\n###\n");
 //		errMarker = "Username and/or password incorrect";
 //		if (resp.indexOf(errMarker) > 0) { 
-//			http.clearCookie("myaccount."+ service +".com");
+//			http.clearCookie(service +".com");
 //			throw new FinareaException("Username and/or password incorrect");
 //		}
 		
@@ -96,13 +96,13 @@ public class DirectFinareaConnection implements FinareaConnection {
 		Debug.log("logging out...");
 		if (!loggedIn) throw new FinareaException("Can not log out, because not logged in");
 		try {
-			String resp = http.sendHttpGet("https://myaccount." + account.getProvider() + "/clx/index.php?part=logoff", true);
+			String resp = http.sendHttpGet("https://" + account.getProvider() + "/clx/index.php?part=logoff", true);
 //			System.out.println("\n### logout response\n" + resp + "\n###\n");
 		} catch (Exception e) {
 			throw new FinareaException(e.getMessage());
 		}
 		loggedIn = false;
-		http.clearCookies("myaccount." + account.getProvider());
+		http.clearCookies(account.getProvider());
 		Debug.log("logout successful!");
 	}
 	
@@ -118,7 +118,7 @@ public class DirectFinareaConnection implements FinareaConnection {
 		if (!loggedIn) throw new FinareaException("login required for making a call!");
 		String resp = null;
 		try {
-			resp = http.sendHttpPost("https://myaccount." + account.getProvider() + "/clx/webcalls2.php", 
+			resp = http.sendHttpPost("https://" + account.getProvider() + "/clx/webcalls2.php", 
 					"action=initcall&" +
 					"panel=&" +
 					"anrphonenr="+ HttpUtil.urlEncode(fromNumber) +"&" +
@@ -130,7 +130,7 @@ public class DirectFinareaConnection implements FinareaConnection {
 //		System.out.println("\n### make call response\n" + resp + "\n###\n");
 		String errMarker = "<body>Session lost<br>";
 		if (resp.indexOf(errMarker) > 0) {
-			http.clearCookies("myaccount." + account.getProvider());
+			http.clearCookies(account.getProvider());
 			throw new FinareaException("Call error: Session lost");
 		}
 		Debug.log("call initiated successfully");
@@ -154,7 +154,7 @@ public class DirectFinareaConnection implements FinareaConnection {
 		try {
 			//TODO: resolve timezone / server-client time difference issues
 			Calendar today = Calendar.getInstance();
-			resp = http.sendHttpPost("https://myaccount."+ account.getProvider() +"/clx/websms2.php", 
+			resp = http.sendHttpPost("https://"+ account.getProvider() +"/clx/websms2.php", 
 					"action=send&" +
 					"panel=&" +
 					"message=" + HttpUtil.urlEncode(text) + "&" +
