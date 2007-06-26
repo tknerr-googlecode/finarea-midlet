@@ -17,10 +17,13 @@ import javax.microedition.lcdui.TextBox;
 import javax.microedition.lcdui.TextField;
 import javax.microedition.midlet.MIDlet;
 import javax.microedition.midlet.MIDletStateChangeException;
+//TODO: comment for non-JSR75 mobiles
+//#######
 import javax.microedition.pim.Contact;
 import javax.microedition.pim.ContactList;
 import javax.microedition.pim.PIM;
 import javax.microedition.pim.PIMException;
+//#######
 import javax.microedition.rms.RecordStore;
 import javax.microedition.rms.RecordStoreException;
 import javax.microedition.rms.RecordStoreFullException;
@@ -35,7 +38,8 @@ public class FinareaMidlet extends MIDlet implements CommandListener {
 	
 	private final Display display = Display.getDisplay(this);
 	
-	private final static String RS_NAME = "finarea_rs";
+	public final static String SETTINGS_RS_NAME = "finarea_settings_rs";
+	public final static String ACCOUNTS_RS_NAME = "finarea_accounts_rs";
 	
 	private boolean useCallscript = false;
 	
@@ -49,16 +53,22 @@ public class FinareaMidlet extends MIDlet implements CommandListener {
 	private final Command cmdFreeCall = new Command("free webcall (frecall)", Command.ITEM, 1);
 	private final Command cmdSms = new Command("sms...", Command.ITEM, 1);
 	private final Command cmdSettings = new Command("settings", Command.OK, 1);
+	private final Command cmdAccounts = new Command("accounts", Command.OK, 1);
 	private final Command cmdFind = new Command("find contact", Command.OK, 1);
+	private final Command cmdEditAccount = new Command("edit account", Command.OK, 1);
+	private final Command cmdDeleteAccount = new Command("delete account", Command.OK, 1);
+	private final Command cmdAddAccount = new Command("add account...", Command.OK, 1);
+	private final Command cmdEnterNumber = new Command("enter number...", Command.OK, 1);
 	
 	private ContactDetails[] contactsDetails = null;
 	private HttpUtil httputil = null;
-	private final Hashtable accounts = new Hashtable();
+	private Hashtable accounts = new Hashtable();
 	
 	private List contactList = null;
 	private final List accountsList = new List("Select an account", List.IMPLICIT);
 	private final List multipleNumbersList = new List("", List.IMPLICIT);
 	private final Form settingsForm = new Form("Settings");
+	private final TextBox numberBox = new TextBox("Enter number to call", "+49", 30, TextField.PHONENUMBER);
 	private final TextBox smsBox = new TextBox("Write SMS", "", 160, TextField.ANY);
 	private final TextBox progressBox = new TextBox("In Progess...", "", 100, TextField.UNEDITABLE);
 	private final TextBox findBox = new TextBox("Find contact", "", 10, TextField.NON_PREDICTIVE | TextField.ANY);
@@ -66,6 +76,13 @@ public class FinareaMidlet extends MIDlet implements CommandListener {
 	private final TextField callscriptField = new TextField("php callscript URL", "https://", 255, TextField.URL);
 	private final TextField smsscriptField = new TextField("php smsscript URL", "https://", 255, TextField.URL);
 	private final TextField callbacknumberField = new TextField("Callback number", "", 20, TextField.PHONENUMBER);
+	private final List manageAccountsList = new List("Manage accounts", List.IMPLICIT);
+	private final Form accountDetailsForm = new Form("Account details");
+	private final TextField accNameField = new TextField("Display name", "", 20, TextField.ANY);
+	private final TextField accUrlField = new TextField("Service URL", "myaccount.XXX.com", 40, TextField.ANY);
+	private final TextField accUsernameField = new TextField("Username", "", 30, TextField.ANY);
+	private final TextField accPasswordField = new TextField("Password", "", 20, TextField.PASSWORD);
+	
 	
 	private static int PROGRESSBOX_SIZE = 1000;
 	
@@ -79,6 +96,9 @@ public class FinareaMidlet extends MIDlet implements CommandListener {
 	private ContactDetails lastSelectedContact;
 	
 	public FinareaMidlet() {
+		
+//TODO: comment for non-JSR75 mobiles
+//#######		
 		String err = null;
 		
 		//test for prerequisites
@@ -107,6 +127,13 @@ public class FinareaMidlet extends MIDlet implements CommandListener {
 			notifyDestroyed();
 			return;
 		}
+//#######	
+		
+
+//TODO: comment for JSR75 mobiles
+//#######
+//		contactsDetails = new ContactDetails[]{}; //empty list
+//#######		
 		
 		String[] names = new String[contactsDetails.length];
 		for (int i = 0; i < contactsDetails.length; i++) {
@@ -118,29 +145,66 @@ public class FinareaMidlet extends MIDlet implements CommandListener {
 		Debug.getDebugBox().setCommandListener(this);
 		Debug.setEnabled(true);
 		
+		numberBox.addCommand(cmdCall);
+		numberBox.addCommand(cmdSms);
+		numberBox.addCommand(cmdBack);
+		if (Debug.isEnabled()) numberBox.addCommand(cmdDebug); 
+		numberBox.setCommandListener(this);
+		
 		//read accounts from jad file
-		for (int i=0; i<10; i++) {
-			Account account = readAccountFromJad(i, this);
-			if (account!=null) {
-				if (!accounts.containsKey(account.getName())) {
-					accounts.put(account.getName(), account);
-					accountsList.append(account.getName(), null);
-				} else {
-					Debug.log("Duplicate entry for service " + account.getName() + ", ignoring...");				
-				}
-			}
-		}
+//		for (int i=0; i<10; i++) {
+//			Account account = readAccountFromJad(i, this);
+//			if (account!=null) {
+//				if (!accounts.containsKey(account.getName())) {
+//					accounts.put(account.getName(), account);
+//					accountsList.append(account.getName(), null);
+//				} else {
+//					Debug.log("Duplicate entry for service " + account.getName() + ", ignoring...");				
+//				}
+//			}
+//		}
 		accountsList.addCommand(cmdBack);
 		if (Debug.isEnabled()) accountsList.addCommand(cmdDebug); 
 		accountsList.setCommandListener(this);
 		
+		manageAccountsList.addCommand(cmdBack);
+		manageAccountsList.addCommand(cmdAddAccount);
+		manageAccountsList.addCommand(cmdEditAccount);
+		manageAccountsList.addCommand(cmdDeleteAccount);
+		if (Debug.isEnabled()) manageAccountsList.addCommand(cmdDebug); 
+		manageAccountsList.setCommandListener(this);
+		
+		//load accounts
+		try {
+			accounts = Account.loadAllAccounts();
+			Enumeration en = accounts.keys();
+			while (en.hasMoreElements()) {
+				String key = (String) en.nextElement();
+				accountsList.append(key, null);
+				manageAccountsList.append(key, null);
+			}
+		} catch (FinareaException e) {
+			e.printStackTrace();
+			Debug.log("Could not load accounts: " + e.getMessage());
+		}
+		
+		accountDetailsForm.addCommand(cmdBack);
+		accountDetailsForm.addCommand(cmdSave);
+		accountDetailsForm.append(accNameField);
+		accountDetailsForm.append(accUrlField);
+		accountDetailsForm.append(accUsernameField);
+		accountDetailsForm.append(accPasswordField);
+		if (Debug.isEnabled()) accountDetailsForm.addCommand(cmdDebug); 
+		accountDetailsForm.setCommandListener(this);
 		
 		contactList = new List("Contacts", List.IMPLICIT, names, null);
-		contactList.addCommand(cmdGoto);
-		contactList.addCommand(cmdCall);
-		contactList.addCommand(cmdSms);
-		contactList.addCommand(cmdFreeCall);
+		if (contactsDetails.length>0)contactList.addCommand(cmdGoto);
+		if (contactsDetails.length>0) contactList.addCommand(cmdCall);
+		if (contactsDetails.length>0) contactList.addCommand(cmdSms);
+		//if (contactsDetails.length>0) contactList.addCommand(cmdFreeCall);
+		contactList.addCommand(cmdEnterNumber);
 		contactList.addCommand(cmdSettings);
+		contactList.addCommand(cmdAccounts);
 		contactList.addCommand(cmdExit);
 		if (Debug.isEnabled()) contactList.addCommand(cmdDebug); 
 		contactList.setCommandListener(this);
@@ -200,22 +264,22 @@ public class FinareaMidlet extends MIDlet implements CommandListener {
 	}
 	
 	
-	/**
-	 * reads the account from the jad file
-	 * @param number
-	 * @return
-	 */
-	private Account readAccountFromJad(int number, MIDlet midlet) {
-		String name = midlet.getAppProperty("service-" + number + "-name");
-		String provider = midlet.getAppProperty("service-" + number + "-account-provider");
-		String user = midlet.getAppProperty("service-" + number + "-account-username");
-		String pass = midlet.getAppProperty("service-" + number + "-account-password");
-		if (name!=null && provider!=null && user!=null && pass!=null) {
-			return new Account(name, provider, user, pass);
-		} else {
-			return null;
-		}
-	}
+//	/**
+//	 * reads the account from the jad file
+//	 * @param number
+//	 * @return
+//	 */
+//	private Account readAccountFromJad(int number, MIDlet midlet) {
+//		String name = midlet.getAppProperty("service-" + number + "-name");
+//		String provider = midlet.getAppProperty("service-" + number + "-account-provider");
+//		String user = midlet.getAppProperty("service-" + number + "-account-username");
+//		String pass = midlet.getAppProperty("service-" + number + "-account-password");
+//		if (name!=null && provider!=null && user!=null && pass!=null) {
+//			return new Account(name, provider, user, pass);
+//		} else {
+//			return null;
+//		}
+//	}
 	
 	
 	/**
@@ -287,16 +351,40 @@ public class FinareaMidlet extends MIDlet implements CommandListener {
 						display.setCurrent(new Alert("Number not given", "The selected contacted has no phone number!", null, AlertType.WARNING), contactList);
 					} 
 				}
+			//settings
+			} else if (cmd == cmdEnterNumber) {
+				display.setCurrent(numberBox);
 			// settings
 			} else if (cmd == cmdSettings) {
 				display.setCurrent(settingsForm);
+			// accounts
+			} else if (cmd == cmdAccounts) {
+				display.setCurrent(manageAccountsList);
 			// goto contact beginning with ...
 			} else if (cmd == cmdGoto) {
 				display.setCurrent(findBox);
 			// quit
 			} else if (cmd == cmdExit) {
 				notifyDestroyed();
-			} 
+			}
+		} else if (d == numberBox) {
+			if (cmd == cmdCall) {
+				if (callbacknumberField.getString().trim().length() < 1) {
+					display.setCurrent(new Alert("No Callback Number", "You must specify a call-back number first (see settings)!", null, AlertType.WARNING), contactList);
+					return;
+				}
+				String number = numberBox.getString();
+				nextAction = "doCall";
+				lastSelectedContact = new ContactDetails(number, new String[]{number}, new String[]{""});
+				display.setCurrent(accountsList);
+			} else if (cmd == cmdSms) {
+				nextAction = "sendSMS";
+				String number = numberBox.getString();
+				lastSelectedContact = new ContactDetails(number, new String[]{number}, new String[]{""});
+				display.setCurrent(accountsList);
+			} else if (cmd == cmdBack) {
+				display.setCurrent(contactList);
+			}
 		} else if (d == multipleNumbersList) {
 			if (cmd == List.SELECT_COMMAND) {
 				String tmp = multipleNumbersList.getString(multipleNumbersList.getSelectedIndex());
@@ -311,6 +399,85 @@ public class FinareaMidlet extends MIDlet implements CommandListener {
 				}	
 			} else if (cmd == cmdBack) {
 				display.setCurrent(contactList);
+			}
+		} else if (d == manageAccountsList) {
+			int idx = manageAccountsList.getSelectedIndex();
+			lastSelectedAccount = idx!=-1 ? (Account) accounts.get(manageAccountsList.getString(idx)) : null;
+			
+			if (cmd == List.SELECT_COMMAND || cmd == cmdEditAccount) {
+				if (idx == -1) {
+					display.setCurrent(new Alert("No account selected", "You must select an existing account!", null, AlertType.WARNING), manageAccountsList);
+					return;
+				} 
+				accNameField.setString(lastSelectedAccount.getName());
+				accNameField.setConstraints(TextField.ANY | TextField.UNEDITABLE);
+				accUrlField.setString(lastSelectedAccount.getProvider());
+				accUsernameField.setString(lastSelectedAccount.getUsername());
+				accPasswordField.setString(lastSelectedAccount.getPassword());
+				display.setCurrent(accountDetailsForm);
+			} else if (cmd == cmdAddAccount) {
+				accNameField.setString("");
+				accNameField.setConstraints(TextField.ANY);
+				accUrlField.setString("myaccount.XXX.TLD");
+				accUsernameField.setString("");
+				accPasswordField.setString("");
+				lastSelectedAccount = null;
+				display.setCurrent(accountDetailsForm);
+			} else if (cmd == cmdDeleteAccount) {
+				if (idx == -1) {
+					display.setCurrent(new Alert("No account selected", "You must select an existing account!", null, AlertType.WARNING), manageAccountsList);
+					return;
+				} 
+				try {
+					String oldName = lastSelectedAccount.getName(); 
+					lastSelectedAccount.deleteAccount();
+					accounts.remove(oldName);
+					manageAccountsList.delete(idx);
+					accountsList.delete(idx);
+					display.setCurrent(new Alert("Delete Success!", "Successfully deleted account", null, AlertType.CONFIRMATION));
+				} catch (FinareaException e) {
+					display.setCurrent(new Alert("Delete Failed!", "Could not delete account: " + e.getMessage(), null, AlertType.ERROR));
+				}
+			} else if (cmd == cmdBack) {
+				display.setCurrent(contactList);
+			}
+		} else if (d == accountDetailsForm) {
+			if (cmd == cmdSave) {
+				try {
+					String name = accNameField.getString().trim();
+					String provider = accUrlField.getString().trim();
+					String username = accUsernameField.getString().trim();
+					String password = accPasswordField.getString().trim();
+					if (name.length()<1 || provider.length()<1 || username.length()<1 || password.length()<1)
+						throw new FinareaException("All fields must be set");
+					if (!provider.startsWith("myaccount.") || provider.endsWith("/"))
+						throw new FinareaException("Malformed Service URL, must be myaccount.XXX.TLD!");
+						
+					if (lastSelectedAccount==null) {
+						//new account
+						if (accounts.containsKey(name)) 
+							throw new FinareaException ("Account name already exists!");
+						Account acc = new Account(name, accUrlField.getString().trim(), 
+								accUsernameField.getString().trim(), 
+								accPasswordField.getString().trim());
+						acc.saveAccount();
+						accounts.put(name, acc);
+						accountsList.append(name, null);
+						manageAccountsList.append(name, null);
+					} else {
+						//account edited
+						//lastSelectedAccount.setName(name); //uneditable
+						lastSelectedAccount.setProvider(accUrlField.getString().trim());
+						lastSelectedAccount.setUsername(accUsernameField.getString().trim());
+						lastSelectedAccount.setPassword(accPasswordField.getString().trim());
+						lastSelectedAccount.saveAccount(); 
+					}
+					display.setCurrent(new Alert("Save Success!", "Successfully saved account", null, AlertType.CONFIRMATION), manageAccountsList);
+				} catch (FinareaException e) {
+					display.setCurrent(new Alert("Save Failed!", "Could not save account: " + e.getMessage(), null, AlertType.ERROR));
+				}
+			} else if (cmd == cmdBack) {
+				display.setCurrent(manageAccountsList);
 			}
 		} else if (d == smsBox) {
 			if (cmd == cmdSend) {
@@ -359,7 +526,7 @@ public class FinareaMidlet extends MIDlet implements CommandListener {
 					display.setCurrent(new Alert("Save Failed!", "Could not save settings: " + e.getMessage(), null, AlertType.ERROR));
 				}
 			} else if (cmd == cmdBack) {
-				//restore previous settings
+				//reload settings when leaving the form
 				loadSettings();
 				display.setCurrent(contactList);
 			}
@@ -518,7 +685,8 @@ public class FinareaMidlet extends MIDlet implements CommandListener {
 	}
 	
 	
-	
+//TODO: comment for non-JSR75 mobiles
+//#######
 	
 	/**
 	 * loads the contacts into the ContactDetails array
@@ -586,7 +754,7 @@ public class FinareaMidlet extends MIDlet implements CommandListener {
 			}	
 		}
 	}
-	
+//#######	
 
 	/**
 	 * grows an array by int grow and returns the grown array
@@ -648,7 +816,7 @@ public class FinareaMidlet extends MIDlet implements CommandListener {
 	private void loadSettings() {
 		RecordStore rs = null;
 		try {
-			 rs = RecordStore.openRecordStore(RS_NAME, false);
+			 rs = RecordStore.openRecordStore(SETTINGS_RS_NAME, false);
 			 //connection setting
 			 byte[] raw = rs.getRecord(1);
 			 if ("0".equals(new String(raw))) {
@@ -696,7 +864,7 @@ public class FinareaMidlet extends MIDlet implements CommandListener {
 	private void saveSettings() throws FinareaException {
 		RecordStore rs = null;
 		try {
-			 rs = RecordStore.openRecordStore(RS_NAME, true);
+			 rs = RecordStore.openRecordStore(SETTINGS_RS_NAME, true);
 			 if (rs.getNumRecords() < 1) {
 				 //just created, add empty records...
 				 for (int i=0; i<settingsForm.size(); i++)
@@ -728,4 +896,5 @@ public class FinareaMidlet extends MIDlet implements CommandListener {
 			}
 		}
 	}
+
 }
